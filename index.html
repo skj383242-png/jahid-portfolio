@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Jahid.Design — Video Editor & Motion Graphics Artist</title>
+
+  <meta
+    name="description"
+    content="Jahid is a high-retention video editor and motion graphics artist specializing in short-form content, tech edits, fitness content, and motion graphics."
+  />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+
+    :root {
+      --bg: #080808;
+      --panel: #101010;
+      --panel-light: #171717;
+      --text: #f4f4ef;
+      --muted: #8a8a84;
+      --line: rgba(255,255,255,0.1);
+      --accent: #d9ff3f;
+      --sidebar-width: 260px;
+      --ease: cubic-bezier(.16, 1, .3, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Manrope", sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      opacity: .025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .mono {
+      font-family: "DM Mono", monospace;
+    }
+
+    /* =========================
+       LOADER
+    ========================= */
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      transition: opacity .8s ease, visibility .8s ease;
+    }
+
+    .loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-box {
+      width: min(90%, 420px);
+    }
+
+    .loader-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
+
+    .loader-line {
+      height: 2px;
+      background: rgba(255,255,255,.1);
+      overflow: hidden;
+    }
+
+    .loader-progress {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+    }
+
+    /* =========================
+       SIDEBAR
+    ========================= */
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      padding: 38px 28px;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 100;
+      background: rgba(8,8,8,.8);
+      backdrop-filter: blur(20px);
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.07em;
+    }
+
+    .brand span {
+      color: var(--accent);
+    }
+
+    .brand-description {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.7;
+      margin-top: 16px;
+      max-width: 170px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      margin-top: 25px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 15px var(--accent);
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .nav a {
+      position: relative;
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 12px;
+      border-radius: 8px;
+      transition: .3s ease;
+    }
+
+    .nav a::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      transition: .3s ease;
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      color: var(--text);
+      background: rgba(255,255,255,.04);
+      padding-left: 25px;
+    }
+
+    .nav a:hover::before,
+    .nav a.active::before {
+      width: 12px;
+    }
+
+    .sidebar-bottom {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .sidebar-socials {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .sidebar-socials a {
+      font-size: 11px;
+      color: var(--muted);
+      transition: .3s ease;
+    }
+
+    .sidebar-socials a:hover {
+      color: var(--accent);
+    }
+
+    /* =========================
+       MOBILE NAV
+    ========================= */
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 18px;
+      z-index: 200;
+      background: rgba(8,8,8,.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line);
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mobile-menu {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    main {
+      margin-left: var(--sidebar-width);
+    }
+
+    section {
+      min-height: 100vh;
+      padding: 120px 8vw;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .section-number {
+      color: var(--accent);
+      font-size: 10px;
+      letter-spacing: .12em;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-size: clamp(42px, 6vw, 88px);
+      line-height: .94;
+      letter-spacing: -.08em;
+      max-width: 850px;
+    }
+
+    .section-title span {
+      color: var(--accent);
+    }
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      overflow: hidden;
+    }
+
+    .hero-orb {
+      position: absolute;
+      right: 5%;
+      top: 18%;
+      width: 480px;
+      height: 480px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: .06;
+      filter: blur(120px);
+      animation: orb 7s ease-in-out infinite;
+    }
+
+    @keyframes orb {
+      0%,100% {
+        transform: translate(0,0) scale(1);
+      }
+
+      50% {
+        transform: translate(-50px,40px) scale(1.2);
+      }
+    }
+
+    .hero-small {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 25px;
+      animation: fadeUp 1s .2s both var(--ease);
+    }
+
+    .hero h1 {
+      font-size: clamp(65px, 10vw, 150px);
+      line-height: .82;
+      letter-spacing: -.1em;
+      max-width: 1000px;
+      animation: heroText 1.2s .35s both var(--ease);
+    }
+
+    .hero h1 span {
+      color: var(--accent);
+    }
+
+    @keyframes heroText {
+      from {
+        opacity: 0;
+        transform: translateY(70px);
+        clip-path: inset(100% 0 0 0);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    .hero-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 40px;
+      margin-top: 65px;
+      animation: fadeUp 1s .8s both var(--ease);
+    }
+
+    .hero-description {
+      color: var(--muted);
+      max-width: 430px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .hero-description strong {
+      color: var(--text);
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 20px;
+      border-radius: 100px;
+      font-size: 12px;
+      transition: .4s var(--ease);
+    }
+
+    .button:hover {
+      transform: translateY(-5px);
+    }
+
+    .button-primary {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .button-outline {
+      border: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .button-outline:hover {
+      background: var(--text);
+      color: #000;
+    }
+
+    /* =========================
+       ABOUT
+    ========================= */
+
+    .about {
+      background: var(--panel);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      margin-top: 70px;
+    }
+
+    .about-text {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.9;
+    }
+
+    .about-text p {
+      margin-bottom: 25px;
+    }
+
+    .facts {
+      border-top: 1px solid var(--line);
+    }
+
+    .fact {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+
+    .fact span {
+      color: var(--muted);
+    }
+
+    /* =========================
+       SKILLS
+    ========================= */
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--line);
+      margin-top: 70px;
+    }
+
+    .skill {
+      background: var(--bg);
+      padding: 35px;
+      min-height: 260px;
+      transition: .4s ease;
+    }
+
+    .skill:hover {
+      background: var(--panel-light);
+    }
+
+    .skill-number {
+      color: var(--accent);
+      font-size: 11px;
+      margin-bottom: 70px;
+    }
+
+    .skill h3 {
+      font-size: 23px;
+      letter-spacing: -.05em;
+      margin-bottom: 14px;
+    }
+
+    .skill p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* =========================
+       WORK
+    ========================= */
+
+    .work {
+      background: var(--panel);
+    }
+
+    .work-description {
+      color: var(--muted);
+      max-width: 450px;
+      line-height: 1.8;
+      font-size: 14px;
+      margin-top: 25px;
+    }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 65px;
+    }
+
+    .project {
+      min-height: 350px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      transition: .6s var(--ease);
+    }
+
+    .project:hover {
+      transform: translateY(-10px);
+      border-color: rgba(217,255,63,.6);
+    }
+
+    .project-bg {
+      position: absolute;
+      inset: 0;
+      transition: transform .7s var(--ease);
+    }
+
+    .project:hover .project-bg {
+      transform: scale(1.08);
+    }
+
+    .project:nth-child(1) .project-bg {
+      background:
+        radial-gradient(circle at 30% 30%, rgba(217,255,63,.3), transparent 30%),
+        linear-gradient(135deg, #191919, #080808);
+    }
+
+    .project:nth-child(2) .project-bg {
+      background:
+        radial-gradient(circle at 70% 30%, rgba(80,130,255,.3), transparent 30%),
+        linear-gradient(135deg, #191919, #080808);
+    }
+
+    .project:nth-child(3) .project-bg {
+      background:
+        radial-gradient(circle at 30% 70%, rgba(255,80,40,.25), transparent 30%),
+        linear-gradient(135deg, #191919, #080808);
+    }
+
+    .project:nth-child(4) .project-bg {
+      background:
+        radial-gradient(circle at 70% 70%, rgba(255,255,255,.2), transparent 30%),
+        linear-gradient(135deg, #191919, #080808);
+    }
+
+    .project-content {
+      position: absolute;
+      inset: 0;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .project-top {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .project-category {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    .project-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .project h3 {
+      font-size: 30px;
+      line-height: .95;
+      letter-spacing: -.06em;
+    }
+
+    .project-arrow {
+      width: 45px;
+      height: 45px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      transition: .4s ease;
+    }
+
+    .project:hover .project-arrow {
+      background: var(--accent);
+      color: #000;
+      transform: rotate(45deg);
+    }
+
+    .portfolio-button {
+      margin-top: 45px;
+    }
+
+    /* =========================
+       SERVICES
+    ========================= */
+
+    .services {
+      background: var(--bg);
+    }
+
+    .service-list {
+      margin-top: 70px;
+      border-top: 1px solid var(--line);
+    }
+
+    .service {
+      display: grid;
+      grid-template-columns: 70px 1fr 1fr 40px;
+      gap: 25px;
+      align-items: center;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+      transition: .4s ease;
+    }
+
+    .service:hover {
+      padding-left: 20px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .service-number {
+      color: var(--accent);
+      font-size: 11px;
+    }
+
+    .service h3 {
+      font-size: 22px;
+      letter-spacing: -.05em;
+    }
+
+    .service p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .service-arrow {
+      font-size: 20px;
+      transition: .4s ease;
+    }
+
+    .service:hover .service-arrow {
+      color: var(--accent);
+      transform: rotate(-45deg);
+    }
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .contact {
+      background: var(--accent);
+      color: #080808;
+    }
+
+    .contact .section-number {
+      color: #080808;
+      opacity: .5;
+    }
+
+    .contact h2 {
+      font-size: clamp(65px, 11vw, 160px);
+      line-height: .82;
+      letter-spacing: -.1em;
+      max-width: 1000px;
+    }
+
+    .contact h2 span {
+      color: #080808;
+      opacity: .45;
+    }
+
+    .contact-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 40px;
+      margin-top: 70px;
+    }
+
+    .contact-text {
+      max-width: 420px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .contact-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .contact-button {
+      padding: 16px 22px;
+      border-radius: 100px;
+      background: #080808;
+      color: var(--text);
+      font-size: 12px;
+      transition: .4s var(--ease);
+    }
+
+    .contact-button:hover {
+      transform: translateY(-5px);
+      padding-left: 30px;
+      padding-right: 30px;
+    }
+
+    .contact-button-outline {
+      background: transparent;
+      color: #080808;
+      border: 1px solid rgba(0,0,0,.35);
+    }
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      margin-left: var(--sidebar-width);
+      padding: 25px 8vw;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    /* =========================
+       REVEAL ANIMATION
+    ========================= */
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition:
+        opacity 1s var(--ease),
+        transform 1s var(--ease);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 900px) {
+
+      .sidebar {
+        display: none;
+      }
+
+      .mobile-nav {
+        display: flex;
+      }
+
+      main {
+        margin-left: 0;
+      }
+
+      footer {
+        margin-left: 0;
+      }
+
+      section {
+        padding: 120px 25px;
+      }
+
+      .hero {
+        padding-top: 150px;
+      }
+
+      .hero-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 60px;
+      }
+
+      .work-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .service {
+        grid-template-columns: 45px 1fr 30px;
+      }
+
+      .service p {
+        grid-column: 2 / 3;
+      }
+
+      .contact-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 500px) {
+
+      .hero h1 {
+        font-size: 19vw;
+      }
+
+      .hero-buttons {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .button {
+        justify-content: center;
+      }
+
+      .project {
+        min-height: 320px;
+      }
+
+      .contact h2 {
+        font-size: 19vw;
+      }
+
+      .contact-buttons {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .contact-button {
+        text-align: center;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- LOADER -->
+
+  <div class="loader">
+
+    <div class="loader-box">
+
+      <div class="loader-header mono">
+
+        <span>JAHID.DESIGN</span>
+        <span id="loaderPercent">0%</span>
+
+      </div>
+
+      <div class="loader-line">
+
+        <div class="loader-progress"></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- DESKTOP SIDEBAR -->
+
+  <aside class="sidebar">
+
+    <div>
+
+      <a href="#home" class="brand">
+        Jahid<span>.</span>design
+      </a>
+
+      <p class="brand-description">
+
+        Video Editor &
+        Motion Graphics Artist.
+
+      </p>
+
+      <div class="status">
+
+        <span class="status-dot"></span>
+
+        Available for freelance work
+
+      </div>
+
+    </div>
+
+
+    <nav class="nav">
+
+      <a href="#home" class="active">
+        01 — Home
+      </a>
+
+      <a href="#about">
+        02 — About
+      </a>
+
+      <a href="#skills">
+        03 — Skills
+      </a>
+
+      <a href="#work">
+        04 — Work
+      </a>
+
+      <a href="#services">
+        05 — Services
+      </a>
+
+      <a href="#contact">
+        06 — Contact
+      </a>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+      <p>
+        © 2026 Jahid.Design
+      </p>
+
+      <div class="sidebar-socials">
+
+        <a
+          href="mailto:jahidfreelancer4@gmail.com"
+        >
+          Email
+        </a>
+
+        <a
+          href="https://wa.me/919064327703"
+          target="_blank"
+        >
+          WhatsApp
+        </a>
+
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- MOBILE NAV -->
+
+  <div class="mobile-nav">
+
+    <a href="#home" class="brand">
+      Jahid<span>.</span>design
+    </a>
+
+    <button
+      class="mobile-menu"
+      onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})"
+    >
+      ↗
+    </button>
+
+  </div>
+
+
+  <!-- MAIN -->
+
+  <main>
+
+
+    <!-- HERO -->
+
+    <section class="hero" id="home">
+
+      <div class="hero-orb"></div>
+
+      <div class="hero-small mono">
+
+        Video Editor / Motion Graphics Artist
+
+      </div>
+
+
+      <h1>
+
+        I EDIT<br>
+
+        <span>ATTENTION.</span>
+
+      </h1>
+
+
+      <div class="hero-bottom">
+
+        <p class="hero-description">
+
+          Hi, I'm <strong>Jahid</strong> — a video editor and
+          motion graphics artist creating high-retention content
+          for creators, brands, and social media personalities.
+
+        </p>
+
+
+        <div class="hero-buttons">
+
+          <a
+            href="#work"
+            class="button button-primary"
+          >
+
+            Explore My Work
+            ↓
+
+          </a>
+
+
+          <a
+            href="mailto:jahidfreelancer4@gmail.com"
+            class="button button-outline"
+          >
+
+            Let's Talk
+            ↗
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+
+    <section class="about" id="about">
+
+      <div class="section-number mono">
+        02 / About me
+      </div>
+
+
+      <h2 class="section-title">
+
+        Turning raw footage into
+        <spa
